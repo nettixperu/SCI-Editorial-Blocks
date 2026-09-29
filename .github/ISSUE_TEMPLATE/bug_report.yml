@@ -1,0 +1,91 @@
+name: Bug report
+description: Report a reproducible problem with SCI Editorial Blocks.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I searched existing issues for this problem.
+          required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: SCI Editorial Blocks version
+      placeholder: e.g. 0.4.0
+    validations:
+      required: true
+  - type: input
+    id: wordpress-version
+    attributes:
+      label: WordPress version
+      placeholder: e.g. 7.0.4
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: e.g. 8.2.0
+    validations:
+      required: true
+  - type: input
+    id: theme
+    attributes:
+      label: Theme
+      placeholder: Include the theme name and version if known.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - En este artículo / TOC
+        - Callout
+        - Automatic Summary
+        - Reading Time
+        - Related
+        - Sources
+        - Plugin activation / general
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: Explain the reproducible problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: errors
+    attributes:
+      label: Console / PHP errors
+      description: Remove passwords, tokens, and other secrets before sharing.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

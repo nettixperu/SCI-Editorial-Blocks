@@ -137,11 +137,11 @@ Release QA for 0.4.0 included WordPress 7.0.4 and 7.1.2 on PHP 8.5.4, with Twent
 
 ## Contributing
 
-Issues and pull requests are welcome. Please keep changes Gutenberg-native, avoid runtime dependencies, preserve backward compatibility, and include tests when behavior changes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding guidance, and pull request expectations.
 
 ## Security
 
-Please avoid opening public issues for suspected security vulnerabilities. A dedicated security policy will be added to the repository.
+See [SECURITY.md](SECURITY.md) for supported versions and vulnerability reporting. Please do not report suspected vulnerabilities in public issues.
 
 ## License
 
