@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.22.2
+          cache: npm
+
+      - name: Verify PHP version
+        run: |
+          php --version
+          php -r 'if (PHP_VERSION_ID < 80200) { fwrite(STDERR, "PHP 8.2 or later is required.\n"); exit(1); }'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint JavaScript
+        run: npm run lint:js
+
+      - name: Lint CSS
+        run: npm run lint:css
+
+      - name: Lint PHP
+        run: |
+          git ls-files -z -- '*.php' | xargs -0 -r -n 1 php -l
+
+      - name: Validate JSON files
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const files = ['package.json'];
+
+          function collectBlockMetadata(directory) {
+            if (!fs.existsSync(directory)) return;
+
+            for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+              const entryPath = path.join(directory, entry.name);
+              if (entry.isDirectory()) {
+                collectBlockMetadata(entryPath);
+              } else if (entry.isFile() && entry.name === 'block.json') {
+                files.push(entryPath);
+              }
+            }
+          }
+
+          collectBlockMetadata('src');
+          collectBlockMetadata('build');
+
+          for (const file of files) {
+            JSON.parse(fs.readFileSync(file, 'utf8'));
+            console.log(`Valid JSON: ${file}`);
+          }
+          NODE
+
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev
