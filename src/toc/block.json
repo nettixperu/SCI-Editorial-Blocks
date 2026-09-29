@@ -1,0 +1,52 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "sci-editorial/toc",
+	"title": "SCI — En este artículo",
+	"category": "design",
+	"description": "Índice editorial automático basado en encabezados H2.",
+	"textdomain": "sci-editorial-blocks",
+	"usesContext": [ "postId", "postType" ],
+	"render": "file:./render.php",
+	"style": "file:./style-index.css",
+	"editorStyle": "file:./index.css",
+	"editorScript": [
+		"wp-blocks",
+		"wp-block-editor",
+		"wp-components",
+		"wp-i18n",
+		"file:./index.js"
+	],
+	"attributes": {
+		"itemGap": {
+			"type": "string",
+			"default": "0.75rem"
+		},
+		"accentColor": {
+			"type": "string",
+			"default": "#000000"
+		}
+	},
+	"supports": {
+		"html": false,
+		"color": {
+			"background": true,
+			"text": true,
+			"link": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"typography": {
+			"fontFamily": true,
+			"fontSize": true,
+			"fontStyle": true,
+			"fontWeight": true,
+			"lineHeight": true,
+			"letterSpacing": true,
+			"textTransform": true,
+			"textAlign": true
+		}
+	}
+}

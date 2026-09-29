@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "sci-editorial/sources",
+  "title": "SCI — Fuentes",
+  "category": "theme",
+  "description": "Lista manual de fuentes y documentación de respaldo.",
+  "textdomain": "sci-editorial-blocks",
+  "editorScript": [
+    "wp-blocks",
+    "wp-block-editor",
+    "wp-i18n",
+    "file:./index.js"
+  ],
+  "supports": {
+    "html": false,
+    "color": {
+      "text": true,
+      "link": true
+    },
+    "spacing": {
+      "margin": true,
+      "padding": true
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    }
+  }
+}

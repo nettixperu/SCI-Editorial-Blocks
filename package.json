@@ -1,0 +1,15 @@
+{
+	"name": "sci-editorial-blocks",
+	"version": "0.4.0",
+	"private": true,
+	"description": "Development tooling for SCI Editorial Blocks.",
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"lint:js": "wp-scripts lint-js",
+		"lint:css": "wp-scripts lint-style"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "36.0.0"
+	}
+}

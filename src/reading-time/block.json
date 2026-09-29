@@ -1,0 +1,35 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "sci-editorial/reading-time",
+	"title": "SCI — Tiempo de lectura",
+	"category": "theme",
+	"description": "Muestra el tiempo estimado de lectura de la entrada actual.",
+	"textdomain": "sci-editorial-blocks",
+	"usesContext": [ "postId", "postType" ],
+	"render": "file:./render.php",
+	"editorScript": [
+		"wp-blocks",
+		"wp-block-editor",
+		"wp-i18n",
+		"file:./index.js"
+	],
+	"supports": {
+		"html": false,
+		"color": {
+			"text": true
+		},
+		"spacing": {
+			"margin": true
+		},
+		"typography": {
+			"fontFamily": true,
+			"fontSize": true,
+			"fontStyle": true,
+			"fontWeight": true,
+			"lineHeight": true,
+			"letterSpacing": true,
+			"textTransform": true
+		}
+	}
+}
