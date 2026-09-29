@@ -8,6 +8,7 @@ SCI Editorial Blocks is a lightweight WordPress plugin for long-form and technic
 ![WordPress requirement](https://img.shields.io/badge/WordPress-7.0%2B-21759b?logo=wordpress&logoColor=white)
 ![PHP requirement](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)
+![CI](https://github.com/nettixperu/SCI-Editorial-Blocks/actions/workflows/ci.yml/badge.svg)
 
 **Requirements:** WordPress 7.0 or later, PHP 8.2 or later, and the Block Editor. The plugin adds no frontend JavaScript and has no external runtime dependencies.
 
