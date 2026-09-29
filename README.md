@@ -1,68 +1,158 @@
 # SCI Editorial Blocks
 
-Bloques editoriales nativos de Gutenberg para contenido técnico y publicaciones largas.
+**Gutenberg-native editorial blocks for technical publishing.**
 
-**Versión:** 0.4.0 release candidate  
-**Requisitos:** WordPress >= 7.0, PHP >= 8.2, Block Editor activo.
+SCI Editorial Blocks is a lightweight WordPress plugin for long-form and technical content. It adds editorial structure while staying native to the Gutenberg Block Editor.
 
-## Bloques
+![Release version](https://img.shields.io/badge/release-v0.4.0-2f6feb)
+![WordPress requirement](https://img.shields.io/badge/WordPress-7.0%2B-21759b?logo=wordpress&logoColor=white)
+![PHP requirement](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)
+![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)
+
+**Requirements:** WordPress 7.0 or later, PHP 8.2 or later, and the Block Editor. The plugin adds no frontend JavaScript and has no external runtime dependencies.
+
+<!-- Add docs/images/sci-editorial-blocks-overview.png here after an approved product screenshot is available. -->
+
+## Why SCI Editorial Blocks?
+
+Gutenberg already provides the editing and layout foundation. This plugin adds a small set of editorial components for technical articles without turning the editor into a separate page builder. It reuses WordPress and Gutenberg APIs, keeps authored content portable, and adds frontend behavior only where a component needs server-side output.
+
+## Included editorial components
 
 ### SCI — En este artículo
 
-- Genera navegación automáticamente desde headings H2.
-- Conserva anchors manuales.
-- Genera anchors deterministas durante el render, sin modificar `post_content`.
-- Los anchors desaparecen al desactivar el plugin; el contenido original permanece.
+An automatic, server-rendered table of contents based on the post’s H2 blocks. It preserves manual anchors and generates deterministic runtime anchors for headings without one. It does not modify `post_content`.
 
 ### SCI — Callout
 
-Variantes permitidas:
+A static Gutenberg block with five variants: **En contexto**, **Clave**, **En la práctica**, **Para decidir**, and **Advertencia**. Its content is restricted to Core paragraphs and lists and is serialized with the block.
 
-- En contexto
-- Clave
-- En la práctica
-- Para decidir
-- Advertencia
+### Automatic Summary
 
-Contenido permitido: bloques Core `Paragraph` y `List`, incluidos enlaces y formatos inline. La etiqueta y el contenido se serializan estáticamente para sobrevivir a la desactivación.
+A Gutenberg pattern, not a custom block. It combines Core Group, Image, Paragraph, and Post Excerpt blocks with a local decorative SVG icon. The excerpt comes from WordPress.
 
 ### SCI — Tiempo de lectura
 
-Calcula automáticamente el tiempo estimado a 220 palabras por minuto. Se recomienda insertarlo una sola vez en la plantilla Single; no requiere configuración.
-
-### SCI — Fuentes
-
-Lista manual de fuentes y documentación con `core/list` y `core/list-item`. Los títulos se editan con Gutenberg; los enlaces son opcionales y usan la herramienta Core de enlaces. El label y las referencias se serializan estáticamente para permanecer visibles al desactivar el plugin.
+Calculates reading time on the server at 220 words per minute using Unicode-aware word counting. It is designed for use in a Single template.
 
 ### SCI — Relacionado
 
-Selecciona automáticamente un artículo publicado que comparta categorías o etiquetas con la entrada actual. Las categorías y etiquetas determinan los candidatos; una coincidencia de título Unicode aporta solo una señal secundaria de ranking. El bloque no ofrece selección manual y no muestra nada cuando el contexto o los candidatos no cumplen los requisitos de relevancia.
+Selects one published post from candidates that share categories or tags. A lightweight title-token match helps rank those candidates. Selection is deterministic; there is no AI or manual override.
 
-### SCI — En resumen automático
+### SCI — Fuentes
 
-Es un Block Pattern Gutenberg-native, no un bloque personalizado. Está compuesto por `core/group`, una fila Core con `core/image` para el icono local y una etiqueta Core traducible “En resumen”, además de `core/post-excerpt`. El SVG es un asset confiable del plugin y la imagen usa `alt` vacío por ser decorativa.
+A manual sources and documentation list built with Core List and List Item blocks. Titles and optional links are statically serialized with the block content.
 
-Insértalo una sola vez en la plantilla Single desde el Site Editor. Cada entrada actual o futura mostrará automáticamente su propio excerpt manual o generado por WordPress. El plugin no modifica artículos individuales ni duplica excerpts; el diseño del Group se puede ajustar con Gutenberg.
+## Design principles
 
-## Compatibilidad visual
+- Gutenberg-native and WordPress-native first; reuse Core capabilities.
+- Server-side rendering for dynamic components; no frontend JavaScript.
+- No external runtime dependencies or telemetry.
+- Portable editorial content and compatibility with Global Styles and `theme.json`.
 
-Los bloques funcionan con block themes y Global Styles. El tema gobierna tipografía, escala, colores y ancho de contenido. El plugin aporta composición, bordes y espaciado estructural usando `currentcolor` y presets WordPress cuando están disponibles; no instala una paleta ni una familia tipográfica propia. El TOC no impone ningún fondo por defecto; puede heredar el fondo del contenedor o recibir una elección explícita mediante supports Core.
+## Installation
 
-## Desarrollo
+### GitHub Release ZIP
 
-Desde la raíz del plugin:
+A `v0.4.0` Git tag is available, but a GitHub Release and downloadable release asset have not been published yet. When the release ZIP is available from GitHub Releases:
+
+1. Download `sci-editorial-blocks-0.4.0.zip` from the project’s GitHub Releases page.
+2. In WordPress Admin, go to **Plugins → Add New → Upload Plugin** and select the ZIP.
+3. Install and activate **SCI Editorial Blocks**.
+
+### Development checkout
 
 ```sh
+git clone https://github.com/nettixperu/SCI-Editorial-Blocks.git
+cd SCI-Editorial-Blocks
 npm ci
 npm run build
 ```
 
-Usa `npm run start` para compilar en modo watch, `npm run lint:js` para revisar JavaScript y `npm run lint:css` para revisar estilos.
+Copy the plugin directory into `wp-content/plugins/` and activate it in WordPress. Node.js and npm are needed for development builds, not for runtime.
 
-## Arquitectura
+## Recommended usage
 
-Los bloques se describen mediante `src/*/block.json`, se compilan con `@wordpress/scripts` y se registran en PHP desde la metadata generada en `build/`. Los paquetes `@wordpress/*` se proporcionan desde WordPress; no hay dependencias runtime externas.
+These placements are editorial recommendations; the plugin does not enforce them.
 
-Node/npm solo son necesarios para compilar y revisar el código. La instalación runtime usa los artefactos de `build/`.
+- **Single template:** SCI — Tiempo de lectura, SCI — En este artículo, and SCI — Relacionado.
+- **Single template:** insert the Automatic Summary pattern where the excerpt should appear.
+- **Individual post content:** add SCI — Callout and SCI — Fuentes where they support the article.
 
-Consulta [SDD.md](SDD.md) para el contrato base, [SDD-READING-TIME.md](SDD-READING-TIME.md) para Reading Time, [SDD-RELATED.md](SDD-RELATED.md) para SCI Related, [SDD-SOURCES.md](SDD-SOURCES.md) para SCI Sources y [PHASE-READING-TIME-0.2.0.md](PHASE-READING-TIME-0.2.0.md) para la evidencia de Reading Time.
+## Suggested article structure
+
+```text
+Title
+Metadata and reading time
+Automatic Summary
+Post content, with Callouts where useful
+Sources and documentation
+Related article
+Newsletter or comments
+```
+
+This is an example editorial flow, not a plugin requirement.
+
+## Requirements
+
+| Requirement | Version |
+|---|---|
+| WordPress | 7.0 or later |
+| PHP | 8.2 or later |
+| Block Editor | Required |
+| Frontend JavaScript | None |
+| External runtime dependencies | None |
+
+## Performance and privacy
+
+The plugin does not add frontend JavaScript, telemetry, external API calls, analytics, or custom database tables. The Automatic Summary icon is bundled locally. TOC, Reading Time, and Related generate output server-side when their blocks are rendered. Related uses a bounded WordPress Core candidate query; database work is not zero.
+
+## Content portability
+
+Callout and Sources serialize their labels and authored content into Gutenberg markup, so that content remains readable if the plugin is disabled. Dynamic components such as the table of contents, reading time, and related-post recommendation may stop displaying when the plugin is disabled; they do not replace or rewrite the original post content. The Automatic Summary pattern uses Core blocks, while its decorative icon is a plugin asset.
+
+## Development
+
+From the repository root:
+
+```sh
+npm ci
+npm run build
+npm run lint:js
+npm run lint:css
+```
+
+The available PHP fixtures are in `tests/` and run with WP-CLI against a disposable WordPress installation with the plugin active. There is no `npm test` script.
+
+```text
+src/       Block source and metadata
+build/     Compiled assets and runtime metadata
+includes/  Shared PHP logic
+tests/     WordPress integration fixtures
+```
+
+## Quality
+
+Release QA for 0.4.0 included WordPress 7.0.4 and 7.1.2 on PHP 8.5.4, with Twenty Twenty-Five and Twenty Twenty-Four checks. TOC and Related have automated WP-CLI fixtures, and the release ZIP was smoke-tested. `npm audit --omit=dev` reported zero runtime vulnerabilities for 0.4.0. These are project QA results, not a compatibility certification for every WordPress site or theme.
+
+## Contributing
+
+Issues and pull requests are welcome. Please keep changes Gutenberg-native, avoid runtime dependencies, preserve backward compatibility, and include tests when behavior changes.
+
+## Security
+
+Please avoid opening public issues for suspected security vulnerabilities. A dedicated security policy will be added to the repository.
+
+## License
+
+SCI Editorial Blocks is licensed under the GNU General Public License v2.0 or later (GPL-2.0-or-later).
+
+See [LICENSE](LICENSE) for the full license text.
+
+## About SCI WebHosting
+
+[SCI WebHosting](https://www.sciwebhosting.com/) is a technical editorial publication focused on infrastructure, hosting, cybersecurity, email, and web technologies for businesses in Latin America.
+
+---
+
+Repository contracts and feature specifications: [SDD.md](SDD.md), [Reading Time](SDD-READING-TIME.md), [Related](SDD-RELATED.md), and [Sources](SDD-SOURCES.md).
