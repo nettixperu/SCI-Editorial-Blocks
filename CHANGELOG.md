@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1
+
+### Fixed
+
+- Keep table-of-contents anchors attached to their source headings when a synced pattern renders additional headings.
+- Omit table-of-contents links for whitespace-only headings.
+- Preserve saved Callout and Sources labels when the editor language changes.
+
 ## 0.4.0
 
 ### Added

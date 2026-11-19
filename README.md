@@ -4,7 +4,7 @@
 
 SCI Editorial Blocks is a lightweight WordPress plugin for long-form and technical content. It adds editorial structure while staying native to the Gutenberg Block Editor.
 
-![Release version](https://img.shields.io/badge/release-v0.4.0-2f6feb)
+![Release version](https://img.shields.io/badge/release-v0.4.1-2f6feb)
 ![WordPress requirement](https://img.shields.io/badge/WordPress-7.0%2B-21759b?logo=wordpress&logoColor=white)
 ![PHP requirement](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)
 ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)
@@ -55,9 +55,9 @@ A manual sources and documentation list built with Core List and List Item block
 
 ### GitHub Release ZIP
 
-A `v0.4.0` Git tag is available, but a GitHub Release and downloadable release asset have not been published yet. When the release ZIP is available from GitHub Releases:
+Download the installable ZIP from [GitHub Releases](https://github.com/nettixperu/SCI-Editorial-Blocks/releases).
 
-1. Download `sci-editorial-blocks-0.4.0.zip` from the project’s GitHub Releases page.
+1. Download the `sci-editorial-blocks-<version>.zip` asset for the version you want to install.
 2. In WordPress Admin, go to **Plugins → Add New → Upload Plugin** and select the ZIP.
 3. Install and activate **SCI Editorial Blocks**.
 

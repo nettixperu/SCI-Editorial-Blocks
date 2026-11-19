@@ -1,6 +1,6 @@
 {
 	"name": "sci-editorial-blocks",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"private": true,
 	"description": "Development tooling for SCI Editorial Blocks.",
 	"scripts": {

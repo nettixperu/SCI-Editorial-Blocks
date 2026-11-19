@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SCI Editorial Blocks
  * Description: Editorial Gutenberg blocks for WordPress.
- * Version: 0.4.0
+ * Version: 0.4.1
  * Requires at least: 7.0
  * Requires PHP: 8.2
  * License: GPL-2.0-or-later
