@@ -45,7 +45,7 @@ function toc_fixture_raw_h2( string $text, string $marker = '' ): array {
 	return toc_fixture_block( 'core/html', array(), '<h2' . $marker_attribute . '>' . esc_html( $text ) . '</h2>' );
 }
 
-function toc_fixture_render_post( array $blocks, string $suffix ): string {
+function toc_fixture_render_post( array $blocks, string $suffix, bool $toc_in_template = false ): string {
 	$post_id = wp_insert_post(
 		array(
 			'post_type'    => 'post',
@@ -64,8 +64,19 @@ function toc_fixture_render_post( array $blocks, string $suffix ): string {
 	$GLOBALS['post'] = $post;
 	setup_postdata( $post );
 	$source_content = $post->post_content;
-	$post_content_block = parse_blocks( '<!-- wp:post-content /-->' )[0];
-	$html = render_block( $post_content_block );
+	$template = '<!-- wp:post-content /-->';
+	if ( $toc_in_template ) {
+		$template = '<!-- wp:sci-editorial/toc /-->' . $template;
+	}
+
+	global $_wp_current_template_content;
+	$previous_template = $_wp_current_template_content;
+	$_wp_current_template_content = $template;
+	try {
+		$html = do_blocks( $template );
+	} finally {
+		$_wp_current_template_content = $previous_template;
+	}
 	toc_fixture_assert( $source_content === get_post_field( 'post_content', $post_id ), 'Rendering leaves post_content unchanged' );
 	wp_reset_postdata();
 	return $html;
@@ -106,6 +117,46 @@ try {
 	toc_fixture_assert( false !== strpos( $html, 'id="sci-toc-nested-group-heading"' ), 'Nested Core H2 receives its planned ID' );
 	toc_fixture_assert( false === strpos( $html, TOC\TOC_HEADING_MARKER ), 'Temporary provenance marker is absent from final frontend HTML' );
 
+
+	$pattern_id = wp_insert_post(
+		array(
+			'post_type'    => 'wp_block',
+			'post_status'  => 'publish',
+			'post_title'   => 'SCI synced pattern fixture',
+			'post_content' => serialize_blocks( array( toc_fixture_heading( 2, 'Repeated heading' ) ) ),
+		),
+		true
+	);
+	if ( is_wp_error( $pattern_id ) ) {
+		throw new RuntimeException( $pattern_id->get_error_message() );
+	}
+	$GLOBALS['toc_fixture_created_posts'][] = $pattern_id;
+
+	$with_pattern = toc_fixture_render_post(
+		array(
+			toc_fixture_block( TOC\TOC_BLOCK_NAME ),
+			toc_fixture_heading( 2, 'Repeated heading' ),
+			toc_fixture_block( 'core/block', array( 'ref' => $pattern_id ) ),
+			toc_fixture_heading( 2, 'Repeated heading' ),
+			toc_fixture_heading( 2, '&nbsp;&#x2003;' ),
+			toc_fixture_heading( 2, 'Next heading' ),
+		),
+		'with-synced-pattern'
+	);
+	$headings = new WP_HTML_Tag_Processor( $with_pattern );
+	$first_ids = array();
+	while ( count( $first_ids ) < 3 && $headings->next_tag( 'H2' ) ) {
+		$first_ids[] = $headings->get_attribute( 'id' );
+	}
+	toc_fixture_assert(
+		array( 'sci-toc-repeated-heading', null, 'sci-toc-repeated-heading-2' ) === $first_ids,
+		'Identical synced-pattern H2 between stored headings does not consume a plan entry'
+	);
+	toc_fixture_assert( 2 === substr_count( $with_pattern, '">Repeated heading</a>' ), 'Only stored instances appear in the TOC' );
+	toc_fixture_assert( false === strpos( $with_pattern, 'href="#sci-toc-section"' ), 'Whitespace-only H2 has no TOC link' );
+	toc_fixture_assert( false !== strpos( $with_pattern, 'href="#sci-toc-next-heading"' ) && false !== strpos( $with_pattern, 'id="sci-toc-next-heading"' ), 'Following H2 keeps the intended fragment' );
+	toc_fixture_assert( false === strpos( $with_pattern, TOC\TOC_HEADING_MARKER ), 'Synced-pattern render leaves no temporary attributes' );
+
 	$outside = render_block( parse_blocks( serialize_blocks( array( toc_fixture_heading( 2, 'Template heading' ) ) ) )[0] );
 	toc_fixture_assert( false === strpos( $outside, TOC\TOC_HEADING_MARKER ), 'Core H2 rendered outside core/post-content scope is not marked' );
 
@@ -118,6 +169,27 @@ try {
 		'toc-first'
 	);
 	toc_fixture_assert( false !== strpos( $toc_first, 'href="#sci-toc-order-independent-heading"' ) && false !== strpos( $toc_first, 'id="sci-toc-order-independent-heading"' ), 'A TOC rendered before Post Content headings shares the same plan and ID' );
+
+	$template_toc = toc_fixture_render_post(
+		array(
+			toc_fixture_heading( 2, 'Template article heading' ),
+			toc_fixture_block( 'core/block', array( 'ref' => $pattern_id ) ),
+			toc_fixture_heading( 2, 'After template pattern' ),
+		),
+		'toc-in-template',
+		true
+	);
+	$template_headings = new WP_HTML_Tag_Processor( $template_toc );
+	$template_ids      = array();
+	while ( $template_headings->next_tag( 'H2' ) ) {
+		$template_ids[] = $template_headings->get_attribute( 'id' );
+	}
+	toc_fixture_assert(
+		false !== strpos( $template_toc, 'href="#sci-toc-after-template-pattern"' ) &&
+		array( 'sci-toc-template-article-heading', null, 'sci-toc-after-template-pattern' ) === $template_ids &&
+		false === strpos( $template_toc, 'href="#sci-toc-repeated-heading"' ),
+		'A template TOC links to the article H2 after a synced pattern'
+	);
 
 	$without_toc = toc_fixture_render_post(
 		array( toc_fixture_raw_h2( 'Unindexed HTML H2' ), toc_fixture_heading( 2, 'No TOC heading' ) ),

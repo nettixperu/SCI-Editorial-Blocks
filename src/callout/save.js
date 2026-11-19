@@ -1,7 +1,7 @@
 // WordPress supplies this external package at editor runtime.
 // eslint-disable-next-line import/no-unresolved
 import { InnerBlocks, useBlockProps } from '@wordpress/block-editor';
-import { getVariant, getVariantLabel } from './variants';
+import { getVariant, getVariantSourceLabel } from './variants';
 
 export default function save( { attributes } ) {
 	const variant = getVariant( attributes.variant );
@@ -12,7 +12,7 @@ export default function save( { attributes } ) {
 	return (
 		<aside { ...blockProps }>
 			<p className="sci-editorial-callout__label">
-				{ getVariantLabel( variant ) }
+				{ attributes.label ?? getVariantSourceLabel( variant ) }
 			</p>
 			<div className="sci-editorial-callout__content">
 				<InnerBlocks.Content />

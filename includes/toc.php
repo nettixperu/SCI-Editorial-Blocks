@@ -45,11 +45,13 @@ function toc_begin_post_content_render( $pre_render, array $parsed_block, ?\WP_B
 
 function toc_mark_heading_provenance( string $content, array $parsed_block, \WP_Block $instance ): string {
 	$post_id = toc_post_id( $instance );
-	$level   = isset( $parsed_block['attrs']['level'] ) ? (int) $parsed_block['attrs']['level'] : 2;
+	$marker  = $parsed_block['attrs'][ TOC_HEADING_MARKER ] ?? null;
 	$scope   = toc_content_render_scope( 'current' );
 
 	if (
-		2 !== $level ||
+		! is_string( $marker ) ||
+		! isset( $scope['marker'] ) ||
+		! str_starts_with( $marker, $scope['marker'] . ':' ) ||
 		! $post_id ||
 		$post_id !== ( $scope['post_id'] ?? 0 ) ||
 		! toc_is_required( $post_id ) ||
@@ -60,7 +62,7 @@ function toc_mark_heading_provenance( string $content, array $parsed_block, \WP_
 
 	$processor = new \WP_HTML_Tag_Processor( $content );
 	if ( $processor->next_tag( 'H2' ) ) {
-		$processor->set_attribute( TOC_HEADING_MARKER, $scope['marker'] );
+		$processor->set_attribute( TOC_HEADING_MARKER, $marker );
 	}
 
 	return $processor->get_updated_html();
@@ -74,13 +76,16 @@ function toc_post_id( \WP_Block $block ): int {
 	return absint( get_the_ID() );
 }
 
-function toc_collect_h2( array $blocks, array &$records ): void {
-	foreach ( $blocks as $parsed_block ) {
+function toc_collect_h2( array &$blocks, array &$records, string $marker = '', int $offset = 0 ): void {
+	foreach ( $blocks as &$parsed_block ) {
 		if ( 'core/heading' === ( $parsed_block['blockName'] ?? '' ) ) {
 			$attributes = is_array( $parsed_block['attrs'] ?? null ) ? $parsed_block['attrs'] : array();
 			$level      = isset( $attributes['level'] ) ? (int) $attributes['level'] : 2;
 
 			if ( 2 === $level ) {
+				if ( '' !== $marker ) {
+					$parsed_block['attrs'][ TOC_HEADING_MARKER ] = $marker . ':' . ( $offset + count( $records ) );
+				}
 				$records[] = array(
 					'label'  => trim( wp_strip_all_tags( (string) ( $parsed_block['innerHTML'] ?? '' ) ) ),
 					'anchor' => isset( $attributes['anchor'] ) ? (string) $attributes['anchor'] : '',
@@ -89,7 +94,7 @@ function toc_collect_h2( array $blocks, array &$records ): void {
 		}
 
 		if ( ! empty( $parsed_block['innerBlocks'] ) && is_array( $parsed_block['innerBlocks'] ) ) {
-			toc_collect_h2( $parsed_block['innerBlocks'], $records );
+			toc_collect_h2( $parsed_block['innerBlocks'], $records, $marker, $offset );
 		}
 	}
 }
@@ -107,7 +112,8 @@ function toc_anchor_plan( int $post_id ): array {
 	}
 
 	$records = array();
-	toc_collect_h2( parse_blocks( (string) $post->post_content ), $records );
+	$blocks  = parse_blocks( (string) $post->post_content );
+	toc_collect_h2( $blocks, $records );
 
 	$reserved = array();
 	foreach ( $records as $record ) {
@@ -191,6 +197,54 @@ function toc_is_required( int $post_id ): bool {
 	return $cache[ $post_id ] = $required;
 }
 
+/**
+ * Mark the article's stored headings before Core expands dynamic blocks.
+ */
+function toc_mark_source_headings( string $content ): string {
+	$scope = toc_content_render_scope( 'current' );
+	if ( empty( $scope ) ) {
+		return $content;
+	}
+
+	$plan   = toc_anchor_plan( $scope['post_id'] );
+	$offset = 0;
+	$limit  = count( $plan );
+	// Core passes only the current segment to the_content on paginated posts.
+	global $multipage, $page, $pages;
+	if ( $multipage && isset( $pages[ $page - 1 ] ) ) {
+		$page_records = array();
+		foreach ( array_slice( $pages, 0, $page ) as $page_content ) {
+			$page_blocks = parse_blocks( $page_content );
+			$offset      = count( $page_records );
+			toc_collect_h2( $page_blocks, $page_records );
+		}
+		$limit = count( $page_records ) - $offset;
+	}
+
+	$blocks  = parse_blocks( $content );
+	$records = array();
+	toc_collect_h2( $blocks, $records, $scope['marker'], $offset );
+
+	// Do not associate a different heading sequence with this article's plan.
+	if ( empty( $records ) || count( $records ) !== $limit ) {
+		return $content;
+	}
+
+	foreach ( $records as $index => $record ) {
+		$entry = $plan[ $offset + $index ] ?? null;
+		if ( null === $entry ) {
+			return $content;
+		}
+
+		$anchor = 'manual' === $entry['source'] ? $entry['id'] : '';
+		if ( $record['label'] !== $entry['label'] || $record['anchor'] !== $anchor ) {
+			return $content;
+		}
+	}
+
+	return serialize_blocks( $blocks );
+}
+
 function toc_filter_the_content( string $content ): string {
 	$scope = toc_content_render_scope( 'current' );
 	if ( empty( $scope ) ) {
@@ -211,7 +265,10 @@ function toc_inject_ids_for_post( string $content, int $post_id, string $marker_
 
 	$plan = toc_anchor_plan( $post_id );
 	$processor = new \WP_HTML_Tag_Processor( $content );
-	$index     = 0;
+	$entries   = array();
+	foreach ( $plan as $index => $entry ) {
+		$entries[ $marker_value . ':' . $index ] = $entry;
+	}
 	while ( $processor->next_tag( 'H2' ) ) {
 		$marker = $processor->get_attribute( TOC_HEADING_MARKER );
 		if ( null === $marker ) {
@@ -219,15 +276,15 @@ function toc_inject_ids_for_post( string $content, int $post_id, string $marker_
 		}
 
 		$processor->remove_attribute( TOC_HEADING_MARKER );
-		if ( $marker_value !== $marker || ! isset( $plan[ $index ] ) ) {
+		if ( ! is_string( $marker ) || ! isset( $entries[ $marker ] ) ) {
 			continue;
 		}
 
-		$entry = $plan[ $index ];
+		$entry = $entries[ $marker ];
+		unset( $entries[ $marker ] );
 		if ( 'generated' === $entry['source'] && null === $processor->get_attribute( 'id' ) ) {
 			$processor->set_attribute( 'id', $entry['id'] );
 		}
-		$index++;
 	}
 
 	return $processor->get_updated_html();

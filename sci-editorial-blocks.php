@@ -24,6 +24,7 @@ add_action( 'init', __NAMESPACE__ . '\\register_blocks' );
 add_action( 'init', __NAMESPACE__ . '\\register_patterns', 20 );
 add_filter( 'pre_render_block', __NAMESPACE__ . '\\toc_begin_post_content_render', 10, 3 );
 add_filter( 'render_block_core/heading', __NAMESPACE__ . '\\toc_mark_heading_provenance', 10, 3 );
+add_filter( 'the_content', __NAMESPACE__ . '\\toc_mark_source_headings', 7 );
 add_filter( 'the_content', __NAMESPACE__ . '\\toc_filter_the_content', 20 );
 
 /**

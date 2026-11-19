@@ -2,24 +2,44 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { __ } from '@wordpress/i18n';
 
-export const VARIANTS = [
-	{ value: 'context', label: __( 'En contexto', 'sci-editorial-blocks' ) },
-	{ value: 'key', label: __( 'Clave', 'sci-editorial-blocks' ) },
-	{
-		value: 'practice',
-		label: __( 'En la práctica', 'sci-editorial-blocks' ),
+const VARIANT_LABELS = {
+	context: {
+		source: 'En contexto',
+		translated: () => __( 'En contexto', 'sci-editorial-blocks' ),
 	},
-	{ value: 'decision', label: __( 'Para decidir', 'sci-editorial-blocks' ) },
-	{ value: 'warning', label: __( 'Advertencia', 'sci-editorial-blocks' ) },
-];
+	key: {
+		source: 'Clave',
+		translated: () => __( 'Clave', 'sci-editorial-blocks' ),
+	},
+	practice: {
+		source: 'En la práctica',
+		translated: () => __( 'En la práctica', 'sci-editorial-blocks' ),
+	},
+	decision: {
+		source: 'Para decidir',
+		translated: () => __( 'Para decidir', 'sci-editorial-blocks' ),
+	},
+	warning: {
+		source: 'Advertencia',
+		translated: () => __( 'Advertencia', 'sci-editorial-blocks' ),
+	},
+};
+
+export function getVariantOptions() {
+	return Object.keys( VARIANT_LABELS ).map( ( value ) => ( {
+		value,
+		label: getVariantLabel( value ),
+	} ) );
+}
 
 export function getVariant( value ) {
-	return VARIANTS.some( ( variant ) => variant.value === value )
-		? value
-		: 'context';
+	return Object.hasOwn( VARIANT_LABELS, value ) ? value : 'context';
 }
 
 export function getVariantLabel( value ) {
-	const variant = getVariant( value );
-	return VARIANTS.find( ( item ) => item.value === variant ).label;
+	return VARIANT_LABELS[ getVariant( value ) ].translated();
+}
+
+export function getVariantSourceLabel( value ) {
+	return VARIANT_LABELS[ getVariant( value ) ].source;
 }

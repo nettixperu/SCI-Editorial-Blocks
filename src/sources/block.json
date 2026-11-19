@@ -6,6 +6,13 @@
 	"category": "theme",
 	"description": "Lista manual de fuentes y documentación de respaldo.",
 	"textdomain": "sci-editorial-blocks",
+	"attributes": {
+		"label": {
+			"type": "string",
+			"source": "text",
+			"selector": ".sci-editorial-sources__label"
+		}
+	},
 	"editorScript": [
 		"wp-blocks",
 		"wp-block-editor",

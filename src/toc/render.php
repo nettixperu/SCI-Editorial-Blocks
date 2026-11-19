@@ -15,7 +15,8 @@ if ( ! $post_id || ! \SCI\EditorialBlocks\toc_is_required( $post_id ) ) {
 $plan  = \SCI\EditorialBlocks\toc_anchor_plan( $post_id );
 $items = array();
 foreach ( $plan as $entry ) {
-	if ( '' === $entry['label'] ) {
+	$text = html_entity_decode( $entry['label'], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	if ( 1 !== preg_match( '/[^\s\p{Z}]/u', $text ) ) {
 		continue;
 	}
 	$fragment = str_starts_with( $entry['id'], '#' ) ? $entry['id'] : '#' . $entry['id'];

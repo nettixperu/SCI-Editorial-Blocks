@@ -10,6 +10,11 @@
     "variant": {
       "type": "string",
       "default": "context"
+    },
+    "label": {
+      "type": "string",
+      "source": "text",
+      "selector": ".sci-editorial-callout__label"
     }
   },
   "style": "file:./style-index.css",
